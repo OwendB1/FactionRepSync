@@ -1,17 +1,18 @@
 ﻿using NLog;
+using Sandbox.Engine.Multiplayer;
+using Sandbox.Game.World;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using Sandbox.Game.World;
+using Sandbox.Engine.Platform;
 using Torch;
 using Torch.API;
 using Torch.API.Managers;
 using Torch.API.Plugins;
 using Torch.API.Session;
 using Torch.Session;
-using VRage.Game;
 
 namespace FactionRepSync
 {
@@ -116,15 +117,17 @@ namespace FactionRepSync
                             {
                                 foreach (var (_, targetFaction) in factionCollectionWithoutCurrentFaction)
                                 {
+
                                     var rep = factionCollection.GetRelationBetweenFactions(myFaction.FactionId, targetFaction.FactionId);
                                     factionCollection.SetReputationBetweenPlayerAndFaction(playerId, targetFaction.FactionId, rep.Item2);
+                                    
                                 }
-                                Log.Info($"Syncing player {playerId} to {myFaction.Name}'s relations");
+                                var structPlayerId = new MyPlayer.PlayerId(0, (int)playerId);
+                                var player = MySession.Static.Players.GetPlayerById(structPlayerId);
+                                Log.Info($"Syncing player {player.DisplayName} to {myFaction.Name}'s relations");
                             }
                         }
-
-                        
-                        await Task.Delay(TimeSpan.FromSeconds(60));
+                        await Task.Delay(TimeSpan.FromMinutes(Config.Interval));
                     }
                 });
             Log.Warn("Successfully Started Faction Polling");
